@@ -1,0 +1,48 @@
+{
+  "experiments": [
+    {
+      "algorithm": "BIKE",
+      "parameter_sets": ["Level-1", "Level-3", "Level-5"],
+      "num_trials": 10
+    },
+    {
+      "algorithm": "HQC",
+      "parameter_sets": ["HQC-128", "HQC-192", "HQC-256"],
+      "num_trials": 10
+    },
+    {
+      "algorithm": "Classic McEliece",
+      "parameter_sets": [
+        "mceliece348864",
+        "mceliece460896",
+        "mceliece6688128",
+        "mceliece6960119",
+        "mceliece8192128"
+      ],
+      "num_trials": 10
+    },
+    {
+      "algorithm": "Streamlined NTRU Prime",
+      "parameter_sets": [
+        "sntrup653",
+        "sntrup761",
+        "sntrup857",
+        "sntrup953",
+        "sntrup1277"
+      ],
+      "num_trials": 10
+    },
+    {
+      "algorithm": "NTRU LPRime",
+      "parameter_sets": [
+        "ntrulpr653",
+        "ntrulpr761",
+        "ntrulpr857",
+        "ntrulpr953",
+        "ntrulpr1277"
+      ],
+      "num_trials": 10
+    }
+  ],
+  "output_dir": "data"
+}

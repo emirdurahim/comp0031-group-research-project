@@ -1,0 +1,17 @@
+# Core runtime dependencies
+# -------------------------
+# PyYAML – YAML config file support (optional; JSON works without it)
+pyyaml>=6.0
+
+# Plotting
+# --------
+matplotlib>=3.7
+
+# Testing
+# -------
+pytest>=7.4
+pytest-cov>=4.1
+
+# Type checking (optional, for development)
+# ------------------------------------------
+mypy>=1.5
