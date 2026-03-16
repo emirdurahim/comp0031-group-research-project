@@ -3,7 +3,7 @@
 ## 1. Project Overview
 **Objective:** Build a reproducible, research-grade Python benchmarking framework to evaluate five Post-Quantum Cryptographic (PQC) Key Encapsulation Mechanisms (KEMs) based on the NIST Fourth Round evaluation criteria.
 **Target Algorithms:** BIKE, HQC, Classic McEliece, Streamlined NTRU Prime, NTRU LPRime.
-**Target Output:** A 9-page IEEE Transactions-style research paper analyzing the speed, memory, and size trade-offs of these algorithms.
+**Target Output:** A 9-page IEEE Transactions-style research paper analysing the speed, memory, and size trade-offs of these algorithms.
 
 ## 2. Current Codebase State
 * **Architecture:** Modular, config-driven, and structurally sound. The `KEMAlgorithm` base interface is strictly enforced.
