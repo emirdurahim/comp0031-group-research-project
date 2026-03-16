@@ -42,6 +42,11 @@
         "ntrulpr1277"
       ],
       "num_trials": 10
+    },
+    {
+      "algorithm": "FIPS-203",
+      "parameter_sets": ["ML-KEM-512", "ML-KEM-768", "ML-KEM-1024"],
+      "num_trials": 10
     }
   ],
   "output_dir": "data"

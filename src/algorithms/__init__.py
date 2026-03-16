@@ -26,6 +26,7 @@ from .hqc import HQC
 from .mceliece import ClassicMcEliece
 from .ntru_lprime import NTRULPRime
 from .ntru_prime import StreamlinedNTRUPrime
+from .fips203 import ML_KEM
 
 __all__ = [
     "KEMAlgorithm",
@@ -36,4 +37,5 @@ __all__ = [
     "ClassicMcEliece",
     "StreamlinedNTRUPrime",
     "NTRULPRime",
+    "ML_KEM",
 ]
