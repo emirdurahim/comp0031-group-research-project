@@ -4,6 +4,7 @@
 pyyaml>=6.0
 numpy>=1.23.0
 scipy>=1.10.0
+pycryptodome==3.23.0
 
 # Plotting
 # --------
