@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-import statistics
+import numpy as np
 from dataclasses import dataclass
 from typing import Dict, List, Sequence
 
@@ -147,12 +147,13 @@ def _stat_summary(values: Sequence[float]) -> Dict[str, float]:
     """Compute basic descriptive statistics over *values*."""
     if not values:
         return {"mean": 0.0, "median": 0.0, "stdev": 0.0, "min": 0.0, "max": 0.0}
+    arr = np.array(values, dtype=float)
     return {
-        "mean": statistics.mean(values),
-        "median": statistics.median(values),
-        "stdev": statistics.stdev(values) if len(values) > 1 else 0.0,
-        "min": min(values),
-        "max": max(values),
+        "mean": float(np.mean(arr)),
+        "median": float(np.median(arr)),
+        "stdev": float(np.std(arr, ddof=1)) if len(arr) > 1 else 0.0,
+        "min": float(np.min(arr)),
+        "max": float(np.max(arr)),
     }
 
 

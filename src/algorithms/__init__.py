@@ -1,13 +1,14 @@
-"""Algorithm package for PQC KEM implementations.
+"""
+Algorithm package for PQC KEM implementations.
 
 Exports
 -------
-KEMAlgorithm       – abstract base class
-BIKE               – BIKE (Bit Flipping Key Encapsulation)
-HQC                – HQC (Hamming Quasi-Cyclic)
-ClassicMcEliece    – Classic McEliece
-StreamlinedNTRUPrime – Streamlined NTRU Prime (sntrup)
-NTRULPRime         – NTRU LPRime (ntrulpr)
+KEMAlgorithm           – abstract base class
+BIKE                   – BIKE (Bit Flipping Key Encapsulation)
+HQC                    – HQC (Hamming Quasi-Cyclic)
+ClassicMcEliece        – Classic McEliece
+StreamlinedNTRUPrime   – Streamlined NTRU Prime (sntrup)
+NTRULPRime             – NTRU LPRime (ntrulpr)
 
 Usage example::
 
