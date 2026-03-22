@@ -15,6 +15,10 @@ matplotlib>=3.7
 pytest>=7.4
 pytest-cov>=4.1
 
+# QISKIT
+qiskit==2.3.0
+qiskit-aer==0.17.2
+
 # Type checking (optional, for development)
 # ------------------------------------------
 mypy>=1.5
