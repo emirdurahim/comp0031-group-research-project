@@ -17,7 +17,8 @@ from __future__ import annotations
 import os
 from typing import Dict, List
 
-from .base import KeyPair, SignatureAlgorithm
+from ..base import KeyPair, SignatureAlgorithm
+from .core import ml_dsa_keygen, ml_dsa_sign, ml_dsa_verify
 
 # ---------------------------------------------------------------------------
 # Parameter-set definitions
@@ -49,17 +50,6 @@ PARAMETER_SETS: List[str] = list(_PARAM_SETS.keys())
 
 
 class Dilithium(SignatureAlgorithm):
-    """Placeholder stub for the CRYSTALS-Dilithium / ML-DSA signature scheme.
-
-    The cryptographic operations are **not** implemented; the stub returns
-    random bytes of the correct sizes so that the benchmarking framework
-    can exercise the full pipeline without real crypto.
-
-    Parameters
-    ----------
-    parameter_set:
-        One of ``"ML-DSA-44"``, ``"ML-DSA-65"``, or ``"ML-DSA-87"``.
-    """
 
     def __init__(self, parameter_set: str = "ML-DSA-44") -> None:
         if parameter_set not in _PARAM_SETS:
@@ -83,15 +73,11 @@ class Dilithium(SignatureAlgorithm):
         return self._parameter_set
 
     def keygen(self) -> KeyPair:
-        """Return a randomly generated (placeholder) key pair."""
-        public_key = os.urandom(self._params["public_key_bytes"])
-        secret_key = os.urandom(self._params["secret_key_bytes"])
-        return KeyPair(public_key=public_key, secret_key=secret_key)
+        pk, sk = ml_dsa_keygen(self._parameter_set)
+        return KeyPair(public_key=pk, secret_key=sk)
 
     def sign(self, secret_key: bytes, message: bytes) -> bytes:
-        """Return a randomly generated (placeholder) signature."""
-        return os.urandom(self._params["signature_bytes"])
+        return ml_dsa_sign(secret_key, message, self._parameter_set)
 
     def verify(self, public_key: bytes, message: bytes, signature: bytes) -> bool:
-        """Return ``True`` (placeholder – always accepts)."""
-        return True
+        return ml_dsa_verify(public_key, message, signature, self._parameter_set)
