@@ -186,4 +186,4 @@ class TestExperimentRunner:
             / "default.json"
         )
         config = load_config(default_cfg)
-        assert len(config.experiments) == 5
+        assert len(config.experiments) == 6
