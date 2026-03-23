@@ -22,6 +22,7 @@ from src.algorithms import (
     Dilithium,
     NTRULPRime,
     StreamlinedNTRUPrime,
+    ML_KEM,
 )
 from src.algorithms.base import KEMAlgorithm, SignatureAlgorithm
 from src.benchmarks.metrics import AggregatedResult, AggregatedSignatureResult
@@ -45,6 +46,7 @@ _ALGORITHM_REGISTRY: Dict[str, type] = {
     "Dilithium": Dilithium,
     "ML-DSA": Dilithium,
     "FIPS204": Dilithium,
+    "FIPS-203": ML_KEM,
 }
 
 
@@ -90,7 +92,9 @@ class ExperimentRunner:
             self.config = load_config(config)
 
         repo_root = Path(__file__).resolve().parents[2]
-        self.output_dir = Path(output_dir) if output_dir else repo_root / self.config.output_dir
+        self.output_dir = (
+            Path(output_dir) if output_dir else repo_root / self.config.output_dir
+        )
 
     # ------------------------------------------------------------------
     # Public API
