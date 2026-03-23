@@ -15,6 +15,7 @@ from src.experiments.runner import ExperimentRunner
 # Config loading
 # ---------------------------------------------------------------------------
 
+
 class TestLoadConfig:
     def test_load_json(self, tmp_path):
         cfg = {
@@ -64,11 +65,7 @@ class TestLoadConfig:
             load_config(p)
 
     def test_default_num_trials(self, tmp_path):
-        cfg = {
-            "experiments": [
-                {"algorithm": "BIKE", "parameter_sets": ["Level-1"]}
-            ]
-        }
+        cfg = {"experiments": [{"algorithm": "BIKE", "parameter_sets": ["Level-1"]}]}
         p = tmp_path / "cfg.json"
         p.write_text(json.dumps(cfg))
         config = load_config(p)
@@ -86,6 +83,7 @@ class TestLoadConfig:
 # ExperimentEntry dataclass
 # ---------------------------------------------------------------------------
 
+
 class TestExperimentEntry:
     def test_defaults(self):
         entry = ExperimentEntry(algorithm="BIKE", parameter_sets=["Level-1"])
@@ -101,6 +99,7 @@ class TestExperimentEntry:
 # ---------------------------------------------------------------------------
 # ExperimentRunner
 # ---------------------------------------------------------------------------
+
 
 class TestExperimentRunner:
     def _small_config(self) -> ExperimentConfig:
@@ -186,4 +185,4 @@ class TestExperimentRunner:
             / "default.json"
         )
         config = load_config(default_cfg)
-        assert len(config.experiments) == 5
+        assert len(config.experiments) == 6
