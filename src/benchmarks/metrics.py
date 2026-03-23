@@ -1,7 +1,9 @@
-"""Metrics collection for KEM benchmarking.
+"""Metrics collection for KEM and digital-signature benchmarking.
 
-:class:`BenchmarkResult` captures a single benchmark trial's measurements.
-:func:`aggregate_results` computes summary statistics over repeated trials.
+:class:`BenchmarkResult` captures a single KEM benchmark trial's measurements.
+:class:`SignatureBenchmarkResult` captures a single signature benchmark trial.
+:func:`aggregate_results` / :func:`aggregate_signature_results` compute
+summary statistics over repeated trials.
 """
 
 from __future__ import annotations
@@ -203,4 +205,183 @@ def aggregate_results(results: List[BenchmarkResult]) -> AggregatedResult:
         secret_key_size_bytes=first.secret_key_size_bytes,
         ciphertext_size_bytes=first.ciphertext_size_bytes,
         shared_secret_size_bytes=first.shared_secret_size_bytes,
+    )
+
+
+# ======================================================================
+# Digital-signature benchmarking
+# ======================================================================
+
+
+@dataclass
+class SignatureBenchmarkResult:
+    """Measurements from a single digital-signature benchmark trial.
+
+    Attributes
+    ----------
+    algorithm:
+        Human-readable algorithm name (e.g. ``"Dilithium-ML-DSA-44"``).
+    parameter_set:
+        The parameter set used (e.g. ``"ML-DSA-44"``).
+    trial:
+        Zero-based trial index.
+    keygen_time_s:
+        Wall-clock time for key generation, in seconds.
+    sign_time_s:
+        Wall-clock time for signing, in seconds.
+    verify_time_s:
+        Wall-clock time for verification, in seconds.
+    keygen_memory_bytes:
+        Peak memory usage during key generation, in bytes.
+    sign_memory_bytes:
+        Peak memory usage during signing, in bytes.
+    verify_memory_bytes:
+        Peak memory usage during verification, in bytes.
+    public_key_size_bytes:
+        Byte length of the generated public key.
+    secret_key_size_bytes:
+        Byte length of the generated secret key.
+    signature_size_bytes:
+        Byte length of the signature.
+    """
+
+    algorithm: str
+    parameter_set: str
+    trial: int
+    keygen_time_s: float
+    sign_time_s: float
+    verify_time_s: float
+    keygen_memory_bytes: int
+    sign_memory_bytes: int
+    verify_memory_bytes: int
+    public_key_size_bytes: int
+    secret_key_size_bytes: int
+    signature_size_bytes: int
+
+    def to_dict(self) -> Dict[str, object]:
+        """Return a flat dictionary suitable for CSV serialisation."""
+        return {
+            "algorithm": self.algorithm,
+            "parameter_set": self.parameter_set,
+            "trial": self.trial,
+            "keygen_time_s": self.keygen_time_s,
+            "sign_time_s": self.sign_time_s,
+            "verify_time_s": self.verify_time_s,
+            "keygen_memory_bytes": self.keygen_memory_bytes,
+            "sign_memory_bytes": self.sign_memory_bytes,
+            "verify_memory_bytes": self.verify_memory_bytes,
+            "public_key_size_bytes": self.public_key_size_bytes,
+            "secret_key_size_bytes": self.secret_key_size_bytes,
+            "signature_size_bytes": self.signature_size_bytes,
+        }
+
+
+SIGNATURE_CSV_FIELDS: List[str] = [
+    "algorithm",
+    "parameter_set",
+    "trial",
+    "keygen_time_s",
+    "sign_time_s",
+    "verify_time_s",
+    "keygen_memory_bytes",
+    "sign_memory_bytes",
+    "verify_memory_bytes",
+    "public_key_size_bytes",
+    "secret_key_size_bytes",
+    "signature_size_bytes",
+]
+
+
+@dataclass
+class AggregatedSignatureResult:
+    """Summary statistics over repeated signature benchmark trials.
+
+    Each timing/memory field stores a dict with keys
+    ``mean``, ``median``, ``stdev``, ``min``, and ``max``.
+    """
+
+    algorithm: str
+    parameter_set: str
+    num_trials: int
+    keygen_time_s: Dict[str, float]
+    sign_time_s: Dict[str, float]
+    verify_time_s: Dict[str, float]
+    keygen_memory_bytes: Dict[str, float]
+    sign_memory_bytes: Dict[str, float]
+    verify_memory_bytes: Dict[str, float]
+    public_key_size_bytes: int
+    secret_key_size_bytes: int
+    signature_size_bytes: int
+
+    def to_dict(self) -> Dict[str, object]:
+        """Return a flat dictionary (one row per stat) for reporting."""
+        row: Dict[str, object] = {
+            "algorithm": self.algorithm,
+            "parameter_set": self.parameter_set,
+            "num_trials": self.num_trials,
+            "public_key_size_bytes": self.public_key_size_bytes,
+            "secret_key_size_bytes": self.secret_key_size_bytes,
+            "signature_size_bytes": self.signature_size_bytes,
+        }
+        for metric in (
+            "keygen_time_s",
+            "sign_time_s",
+            "verify_time_s",
+            "keygen_memory_bytes",
+            "sign_memory_bytes",
+            "verify_memory_bytes",
+        ):
+            stats = getattr(self, metric)
+            for stat_name, value in stats.items():
+                row[f"{metric}_{stat_name}"] = value
+        return row
+
+
+def aggregate_signature_results(
+    results: List[SignatureBenchmarkResult],
+) -> AggregatedSignatureResult:
+    """Aggregate a list of per-trial :class:`SignatureBenchmarkResult` objects.
+
+    Parameters
+    ----------
+    results:
+        All trials for a **single** algorithm/parameter-set combination.
+
+    Returns
+    -------
+    AggregatedSignatureResult
+        Summary statistics across all trials.
+
+    Raises
+    ------
+    ValueError
+        If *results* is empty or contains data from multiple algorithms.
+    """
+    if not results:
+        raise ValueError("Cannot aggregate an empty list of results.")
+    algorithms = {r.algorithm for r in results}
+    if len(algorithms) > 1:
+        raise ValueError(
+            f"aggregate_signature_results expects a single algorithm; got {algorithms}"
+        )
+    param_sets = {r.parameter_set for r in results}
+    if len(param_sets) > 1:
+        raise ValueError(
+            f"aggregate_signature_results expects a single parameter set; got {param_sets}"
+        )
+
+    first = results[0]
+    return AggregatedSignatureResult(
+        algorithm=first.algorithm,
+        parameter_set=first.parameter_set,
+        num_trials=len(results),
+        keygen_time_s=_stat_summary([r.keygen_time_s for r in results]),
+        sign_time_s=_stat_summary([r.sign_time_s for r in results]),
+        verify_time_s=_stat_summary([r.verify_time_s for r in results]),
+        keygen_memory_bytes=_stat_summary([float(r.keygen_memory_bytes) for r in results]),
+        sign_memory_bytes=_stat_summary([float(r.sign_memory_bytes) for r in results]),
+        verify_memory_bytes=_stat_summary([float(r.verify_memory_bytes) for r in results]),
+        public_key_size_bytes=first.public_key_size_bytes,
+        secret_key_size_bytes=first.secret_key_size_bytes,
+        signature_size_bytes=first.signature_size_bytes,
     )

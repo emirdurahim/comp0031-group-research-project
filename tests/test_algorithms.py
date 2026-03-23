@@ -1,4 +1,4 @@
-"""Tests for KEM algorithm interface and placeholder implementations."""
+"""Tests for KEM and signature algorithm interfaces and placeholder implementations."""
 
 from __future__ import annotations
 
@@ -8,11 +8,13 @@ from src.algorithms import (
     BIKE,
     HQC,
     ClassicMcEliece,
+    Dilithium,
     NTRULPRime,
     StreamlinedNTRUPrime,
 )
-from src.algorithms.base import EncapsulationResult, KEMAlgorithm, KeyPair
+from src.algorithms.base import EncapsulationResult, KEMAlgorithm, KeyPair, SignatureAlgorithm
 from src.algorithms.bike import PARAMETER_SETS as BIKE_PARAM_SETS
+from src.algorithms.dilithium import PARAMETER_SETS as DILITHIUM_PARAM_SETS
 from src.algorithms.hqc import PARAMETER_SETS as HQC_PARAM_SETS
 from src.algorithms.mceliece import PARAMETER_SETS as MCELIECE_PARAM_SETS
 from src.algorithms.ntru_lprime import PARAMETER_SETS as NTRULPR_PARAM_SETS
@@ -157,3 +159,75 @@ class TestKEMAlgorithmABC:
     def test_cannot_instantiate_abstract(self):
         with pytest.raises(TypeError):
             KEMAlgorithm()  # type: ignore[abstract]
+
+
+# ---------------------------------------------------------------------------
+# Signature helper
+# ---------------------------------------------------------------------------
+
+def _check_signature_interface(sig_alg: SignatureAlgorithm) -> None:
+    """Assert the three core signature operations work and return the right types."""
+    assert isinstance(sig_alg.name, str) and sig_alg.name
+    assert isinstance(sig_alg.parameter_set, str) and sig_alg.parameter_set
+
+    kp = sig_alg.keygen()
+    assert isinstance(kp, KeyPair)
+    assert isinstance(kp.public_key, bytes) and len(kp.public_key) > 0
+    assert isinstance(kp.secret_key, bytes) and len(kp.secret_key) > 0
+
+    message = b"test message"
+    sig = sig_alg.sign(kp.secret_key, message)
+    assert isinstance(sig, bytes) and len(sig) > 0
+
+    valid = sig_alg.verify(kp.public_key, message, sig)
+    assert isinstance(valid, bool)
+    assert valid is True
+
+
+# ---------------------------------------------------------------------------
+# Dilithium (FIPS 204 / ML-DSA)
+# ---------------------------------------------------------------------------
+
+class TestDilithium:
+    def test_default_parameter_set(self):
+        assert Dilithium().parameter_set == "ML-DSA-44"
+
+    @pytest.mark.parametrize("param_set", DILITHIUM_PARAM_SETS)
+    def test_interface(self, param_set):
+        _check_signature_interface(Dilithium(param_set))
+
+    @pytest.mark.parametrize("param_set", DILITHIUM_PARAM_SETS)
+    def test_key_sizes(self, param_set):
+        from src.algorithms.dilithium import _PARAM_SETS
+        alg = Dilithium(param_set)
+        kp = alg.keygen()
+        assert len(kp.public_key) == _PARAM_SETS[param_set]["public_key_bytes"]
+        assert len(kp.secret_key) == _PARAM_SETS[param_set]["secret_key_bytes"]
+
+    @pytest.mark.parametrize("param_set", DILITHIUM_PARAM_SETS)
+    def test_signature_size(self, param_set):
+        from src.algorithms.dilithium import _PARAM_SETS
+        alg = Dilithium(param_set)
+        kp = alg.keygen()
+        sig = alg.sign(kp.secret_key, b"hello")
+        assert len(sig) == _PARAM_SETS[param_set]["signature_bytes"]
+
+    def test_invalid_parameter_set(self):
+        with pytest.raises(ValueError, match="Unknown Dilithium"):
+            Dilithium("invalid")
+
+    def test_full_name(self):
+        assert Dilithium("ML-DSA-44").full_name() == "Dilithium-ML-DSA-44"
+
+    def test_repr(self):
+        assert "ML-DSA-44" in repr(Dilithium("ML-DSA-44"))
+
+
+# ---------------------------------------------------------------------------
+# Abstract base – SignatureAlgorithm cannot be instantiated directly
+# ---------------------------------------------------------------------------
+
+class TestSignatureAlgorithmABC:
+    def test_cannot_instantiate_abstract(self):
+        with pytest.raises(TypeError):
+            SignatureAlgorithm()  # type: ignore[abstract]
