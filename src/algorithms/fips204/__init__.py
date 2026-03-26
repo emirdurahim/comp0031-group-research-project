@@ -49,7 +49,7 @@ _PARAM_SETS: Dict[str, Dict[str, int]] = {
 PARAMETER_SETS: List[str] = list(_PARAM_SETS.keys())
 
 
-class Dilithium(SignatureAlgorithm):
+class ML_DSA(SignatureAlgorithm):
 
     def __init__(self, parameter_set: str = "ML-DSA-44") -> None:
         if parameter_set not in _PARAM_SETS:

@@ -20,7 +20,7 @@ Usage example (signature)::
 """
 
 from .base import EncapsulationResult, KEMAlgorithm, KeyPair, SignatureAlgorithm
-from .dilithium import Dilithium
+from .fips204 import ML_DSA
 from .fips203 import ML_KEM
 from .fips205 import SLH_DSA, PARAMETER_SETS as SLH_DSA_PARAMETER_SETS
 
@@ -29,7 +29,7 @@ __all__ = [
     "SignatureAlgorithm",
     "KeyPair",
     "EncapsulationResult",
-    "Dilithium",
+    "ML_DSA",
     "ML_KEM",
     "SLH_DSA",
     "SLH_DSA_PARAMETER_SETS",
