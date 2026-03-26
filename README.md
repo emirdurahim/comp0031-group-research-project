@@ -1,28 +1,20 @@
 # comp0031-group-research-project
 
-**Group Research Project – Hybrid Information Security towards the Age of Quantum Computation**
+### Group Research Project – Hybrid Information Security towards the Age of Quantum Computation\*\*
 
 This repository contains a Python research framework for implementing and
 benchmarking post-quantum cryptographic (PQC) Key Encapsulation Mechanisms
-(KEMs) from the [NIST Fourth Round PQC Standardisation](https://csrc.nist.gov/publications/detail/nistir/8413/final).
+(KEMs) from the [NIST PQC Standards](https://csrc.nist.gov/projects/post-quantum-cryptography) published in August 2024.
 
 ---
 
 ## Algorithms
 
-| Algorithm                                                                     | Family               | NIST Security Levels                  | Implementation Status |
-| ----------------------------------------------------------------------------- | -------------------- | ------------------------------------- | --------------------- |
-| [BIKE](https://bikesuite.org/)                                                | Code-based           | 1, 3, 5                               | Not Implemented       |
-| [HQC](https://pqc-hqc.org/)                                                   | Code-based           | 1 (HQC-128), 3 (HQC-192), 5 (HQC-256) | Not Implemented       |
-| [Classic McEliece](https://classic.mceliece.org/)                             | Code-based           | 1–5 (5 parameter sets)                | Not Implemented       |
-| [Streamlined NTRU Prime](https://ntruprime.cr.yp.to/)                         | NTRU-based           | sntrup653–sntrup1277                  | Not Implemented       |
-| [NTRU LPRime](https://ntruprime.cr.yp.to/)                                    | NTRU-based           | ntrulpr653–ntrulpr1277                | Not Implemented       |
-| [FIPS-203 (ML-KEM)](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf) | Module Lattice-based | ML-KEM-512, ML-KEM-768, ML-KEM-1024   | **Implemented**       |
-
-> **Note:** The cryptographic algorithm bodies are **placeholder stubs** that
-> return random bytes of the correct sizes. They exercise the full benchmarking
-> pipeline but do not provide real security. Implement the cryptographic
-> operations inside each `src/algorithms/*.py` module to replace the stubs.
+| Algorithm                                                                      | Family               | NIST Security Levels                                                                                                                       | Implementation Status |
+| ------------------------------------------------------------------------------ | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------- |
+| [FIPS-203 (ML-KEM)](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf)  | Module Lattice-based | ML-KEM-512, ML-KEM-768, ML-KEM-1024                                                                                                        | **Implemented**       |
+| [FIPS-204 (ML-DSA)](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf)  | Module Lattice-based | ML-DSA-44, ML-DSA-65, ML-DSA-87                                                                                                            | **Implemented**       |
+| [FIPS-205 (SLH-DSA)](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.205.pdf) | Hash-based           | SLH-DSA-SHAKE-128s, SLH-DSA-SHAKE-128f, SLH-DSA-SHAKE-192s, SLH-DSA-SHAKE-192f, SLH-DSA-SHAKE-192f, SLH-DSA-SHAKE-256s, SLH-DSA-SHAKE-256f | **Implemented**       |
 
 ---
 
@@ -32,11 +24,9 @@ benchmarking post-quantum cryptographic (PQC) Key Encapsulation Mechanisms
 src/
     algorithms/          # KEM algorithm modules + abstract base class
         base.py
-        bike.py
-        hqc.py
-        mceliece.py
-        ntru_prime.py
-        ntru_lprime.py
+        fips203.py
+        fips204/         # FIPS 204 related codes
+        fips205/         # FIPS 205 related codes
     benchmarks/          # Timing & memory measurement framework
         metrics.py
         runner.py
@@ -117,17 +107,16 @@ Experiments are described in JSON or YAML files (see
 {
   "experiments": [
     {
-      "algorithm": "BIKE",
-      "parameter_sets": ["Level-1", "Level-3", "Level-5"],
-      "num_trials": 10
+      "algorithm": "FIPS-203",
+      "parameter_sets": ["ML-KEM-512", "ML-KEM-768", "ML-KEM-1024"],
+      "num_trials": 100
     }
   ],
   "output_dir": "data"
 }
 ```
 
-Supported algorithm names: `"BIKE"`, `"HQC"`, `"Classic McEliece"`,
-`"Streamlined NTRU Prime"`, `"NTRU LPRime"`.
+Supported algorithm names: `"FIPS-203"`, `"Dilithium"`, `"SLH-DSA"`
 
 ---
 
