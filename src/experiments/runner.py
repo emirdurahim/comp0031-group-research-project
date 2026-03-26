@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Union
 
 from src.algorithms import (
-    Dilithium,
+    ML_DSA,
     ML_KEM,
     SLH_DSA,
 )
@@ -31,9 +31,9 @@ from .config import ExperimentConfig, ExperimentEntry, load_config
 # ---------------------------------------------------------------------------
 
 _ALGORITHM_REGISTRY: Dict[str, type] = {
-    "Dilithium": Dilithium,
-    "ML-DSA": Dilithium,
-    "FIPS204": Dilithium,
+    "Dilithium": ML_DSA,
+    "ML-DSA": ML_DSA,
+    "FIPS-204": ML_DSA,
     "FIPS-203": ML_KEM,
     "SLH-DSA": SLH_DSA,
     "FIPS-205": SLH_DSA,
@@ -143,6 +143,7 @@ class ExperimentRunner:
     def _run_entry(
         self, entry: ExperimentEntry, parameter_set: str
     ) -> Union[AggregatedResult, AggregatedSignatureResult]:
+        print(f"Running {entry.algorithm} with parameter set {parameter_set}")
         algo = _build_algorithm(entry.algorithm, parameter_set)
 
         if isinstance(algo, SignatureAlgorithm):
