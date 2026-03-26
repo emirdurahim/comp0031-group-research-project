@@ -16,13 +16,9 @@ from pathlib import Path
 from typing import Dict, List, Optional, Union
 
 from src.algorithms import (
-    BIKE,
-    HQC,
-    ClassicMcEliece,
     Dilithium,
-    NTRULPRime,
-    StreamlinedNTRUPrime,
     ML_KEM,
+    SLH_DSA,
 )
 from src.algorithms.base import KEMAlgorithm, SignatureAlgorithm
 from src.benchmarks.metrics import AggregatedResult, AggregatedSignatureResult
@@ -35,18 +31,12 @@ from .config import ExperimentConfig, ExperimentEntry, load_config
 # ---------------------------------------------------------------------------
 
 _ALGORITHM_REGISTRY: Dict[str, type] = {
-    "BIKE": BIKE,
-    "HQC": HQC,
-    "Classic McEliece": ClassicMcEliece,
-    "ClassicMcEliece": ClassicMcEliece,
-    "Streamlined NTRU Prime": StreamlinedNTRUPrime,
-    "StreamlinedNTRUPrime": StreamlinedNTRUPrime,
-    "NTRU LPRime": NTRULPRime,
-    "NTRULPRime": NTRULPRime,
     "Dilithium": Dilithium,
     "ML-DSA": Dilithium,
     "FIPS204": Dilithium,
     "FIPS-203": ML_KEM,
+    "SLH-DSA": SLH_DSA,
+    "FIPS-205": SLH_DSA,
 }
 
 

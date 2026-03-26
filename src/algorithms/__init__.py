@@ -5,21 +5,9 @@ Exports
 -------
 KEMAlgorithm           – abstract base class for KEMs
 SignatureAlgorithm     – abstract base class for digital signatures
-BIKE                   – BIKE (Bit Flipping Key Encapsulation)
-HQC                    – HQC (Hamming Quasi-Cyclic)
-ClassicMcEliece        – Classic McEliece
-StreamlinedNTRUPrime   – Streamlined NTRU Prime (sntrup)
-NTRULPRime             – NTRU LPRime (ntrulpr)
 Dilithium              – CRYSTALS-Dilithium / ML-DSA (FIPS 204)
-
-Usage example (KEM)::
-
-    from src.algorithms import BIKE
-
-    kem = BIKE(parameter_set="Level-1")
-    kp  = kem.keygen()
-    enc = kem.encapsulate(kp.public_key)
-    ss  = kem.decapsulate(enc.ciphertext, kp.secret_key)
+ML_KEM                 – ML-KEM (FIPS 203)
+SLH_DSA                – SLH-DSA (FIPS 205)
 
 Usage example (signature)::
 
@@ -32,24 +20,17 @@ Usage example (signature)::
 """
 
 from .base import EncapsulationResult, KEMAlgorithm, KeyPair, SignatureAlgorithm
-from .bike import BIKE
 from .dilithium import Dilithium
-from .hqc import HQC
-from .mceliece import ClassicMcEliece
-from .ntru_lprime import NTRULPRime
-from .ntru_prime import StreamlinedNTRUPrime
 from .fips203 import ML_KEM
+from .fips205 import SLH_DSA, PARAMETER_SETS as SLH_DSA_PARAMETER_SETS
 
 __all__ = [
     "KEMAlgorithm",
     "SignatureAlgorithm",
     "KeyPair",
     "EncapsulationResult",
-    "BIKE",
-    "HQC",
-    "ClassicMcEliece",
-    "StreamlinedNTRUPrime",
-    "NTRULPRime",
     "Dilithium",
     "ML_KEM",
+    "SLH_DSA",
+    "SLH_DSA_PARAMETER_SETS",
 ]

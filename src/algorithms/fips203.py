@@ -48,7 +48,7 @@ PARAMETER_SETS: List[str] = list(_PARAM_SETS.keys())
 
 
 class ML_KEM(KEMAlgorithm):
-    def __init__(self, parameter_set: str = "HQC-128"):
+    def __init__(self, parameter_set: str = "ML-KEM-512"):
         if parameter_set not in _PARAM_SETS:
             raise ValueError(
                 f"Unknown FIPS-203 parameter set {parameter_set!r}. "
