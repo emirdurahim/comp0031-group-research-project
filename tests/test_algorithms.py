@@ -2,8 +2,9 @@ import pytest
 
 from src.algorithms.base import KEMAlgorithm, SignatureAlgorithm
 from src.algorithms.fips203 import ML_KEM, PARAMETER_SETS as ML_KEM_PARAM_SETS
-from src.algorithms.dilithium import Dilithium, PARAMETER_SETS as DILITHIUM_PARAM_SETS
+from src.algorithms.fips204 import ML_DSA, PARAMETER_SETS as DILITHIUM_PARAM_SETS
 from src.algorithms.fips205 import SLH_DSA, PARAMETER_SETS as SLH_DSA_PARAM_SETS
+
 
 def _check_kem_interface(kem: KEMAlgorithm) -> None:
     kp = kem.keygen()
@@ -19,21 +20,23 @@ def _check_kem_interface(kem: KEMAlgorithm) -> None:
     shared_secret = kem.decapsulate(kp.secret_key, enc.ciphertext)
     assert shared_secret == enc.shared_secret
 
+
 def _check_signature_interface(alg: SignatureAlgorithm) -> None:
     kp = alg.keygen()
     assert kp is not None
-    
+
     message = b"Test message for signature"
     signature = alg.sign(kp.secret_key, message)
     assert signature is not None
     assert isinstance(signature, bytes)
-    
+
     assert alg.verify(kp.public_key, message, signature) is True
     assert alg.verify(kp.public_key, b"Wrong message", signature) is False
-    
+
     bad_sig = bytearray(signature)
     bad_sig[0] ^= 1
     assert alg.verify(kp.public_key, message, bytes(bad_sig)) is False
+
 
 class TestML_KEM:
     def test_default_parameter_set(self):
@@ -45,15 +48,17 @@ class TestML_KEM:
         alg = ML_KEM(param_set)
         _check_kem_interface(alg)
 
+
 class TestDilithium:
     def test_default_parameter_set(self):
-        alg = Dilithium()
+        alg = ML_DSA()
         assert alg.parameter_set == "ML-DSA-44"
 
     @pytest.mark.parametrize("param_set", DILITHIUM_PARAM_SETS)
     def test_interface(self, param_set):
-        alg = Dilithium(param_set)
+        alg = ML_DSA(param_set)
         _check_signature_interface(alg)
+
 
 class TestSLH_DSA:
     def test_default_parameter_set(self):
