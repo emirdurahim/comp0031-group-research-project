@@ -10,11 +10,11 @@ benchmarking post-quantum cryptographic (PQC) Key Encapsulation Mechanisms
 
 ## Algorithms
 
-| Algorithm                                                                      | Family               | NIST Security Levels                                                                                                                       | Implementation Status |
-| ------------------------------------------------------------------------------ | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------- |
-| [FIPS-203 (ML-KEM)](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf)  | Module Lattice-based | ML-KEM-512, ML-KEM-768, ML-KEM-1024                                                                                                        | **Implemented**       |
-| [FIPS-204 (ML-DSA)](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf)  | Module Lattice-based | ML-DSA-44, ML-DSA-65, ML-DSA-87                                                                                                            | **Implemented**       |
-| [FIPS-205 (SLH-DSA)](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.205.pdf) | Hash-based           | SLH-DSA-SHAKE-128s, SLH-DSA-SHAKE-128f, SLH-DSA-SHAKE-192s, SLH-DSA-SHAKE-192f, SLH-DSA-SHAKE-192f, SLH-DSA-SHAKE-256s, SLH-DSA-SHAKE-256f | **Implemented**       |
+| Algorithm                                                                      | Family               | NIST Security Levels                                                                                                   | Implementation Status |
+| ------------------------------------------------------------------------------ | -------------------- | ---------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| [FIPS-203 (ML-KEM)](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.203.pdf)  | Module Lattice-based | ML-KEM-512, ML-KEM-768, ML-KEM-1024                                                                                    | **Implemented**       |
+| [FIPS-204 (ML-DSA)](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.204.pdf)  | Module Lattice-based | ML-DSA-44, ML-DSA-65, ML-DSA-87                                                                                        | **Implemented**       |
+| [FIPS-205 (SLH-DSA)](https://nvlpubs.nist.gov/nistpubs/fips/nist.fips.205.pdf) | Hash-based           | SLH-DSA-SHAKE-128s, SLH-DSA-SHAKE-128f, SLH-DSA-SHAKE-192s, SLH-DSA-SHAKE-192f, SLH-DSA-SHAKE-256s, SLH-DSA-SHAKE-256f | **Implemented**       |
 
 ---
 
