@@ -13,19 +13,16 @@ from __future__ import annotations
 
 import csv
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 from src.algorithms import (
-    BIKE,
-    HQC,
-    ClassicMcEliece,
-    NTRULPRime,
-    StreamlinedNTRUPrime,
+    Dilithium,
     ML_KEM,
+    SLH_DSA,
 )
-from src.algorithms.base import KEMAlgorithm
-from src.benchmarks.metrics import AggregatedResult
-from src.benchmarks.runner import BenchmarkRunner
+from src.algorithms.base import KEMAlgorithm, SignatureAlgorithm
+from src.benchmarks.metrics import AggregatedResult, AggregatedSignatureResult
+from src.benchmarks.runner import BenchmarkRunner, SignatureBenchmarkRunner
 
 from .config import ExperimentConfig, ExperimentEntry, load_config
 
@@ -34,20 +31,19 @@ from .config import ExperimentConfig, ExperimentEntry, load_config
 # ---------------------------------------------------------------------------
 
 _ALGORITHM_REGISTRY: Dict[str, type] = {
-    "BIKE": BIKE,
-    "HQC": HQC,
-    "Classic McEliece": ClassicMcEliece,
-    "ClassicMcEliece": ClassicMcEliece,
-    "Streamlined NTRU Prime": StreamlinedNTRUPrime,
-    "StreamlinedNTRUPrime": StreamlinedNTRUPrime,
-    "NTRU LPRime": NTRULPRime,
-    "NTRULPRime": NTRULPRime,
+    "Dilithium": Dilithium,
+    "ML-DSA": Dilithium,
+    "FIPS204": Dilithium,
     "FIPS-203": ML_KEM,
+    "SLH-DSA": SLH_DSA,
+    "FIPS-205": SLH_DSA,
 }
 
 
-def _build_algorithm(name: str, parameter_set: str) -> KEMAlgorithm:
-    """Instantiate a KEM algorithm by name and parameter set.
+def _build_algorithm(
+    name: str, parameter_set: str
+) -> Union[KEMAlgorithm, SignatureAlgorithm]:
+    """Instantiate an algorithm by name and parameter set.
 
     Raises
     ------
@@ -94,9 +90,9 @@ class ExperimentRunner:
     # Public API
     # ------------------------------------------------------------------
 
-    def run(self) -> List[AggregatedResult]:
+    def run(self) -> List[Union[AggregatedResult, AggregatedSignatureResult]]:
         """Execute all experiments and return aggregated results."""
-        all_results: List[AggregatedResult] = []
+        all_results: List[Union[AggregatedResult, AggregatedSignatureResult]] = []
         for entry in self.config.experiments:
             for param_set in entry.parameter_sets:
                 result = self._run_entry(entry, param_set)
@@ -105,25 +101,40 @@ class ExperimentRunner:
 
     def save_summary(
         self,
-        results: List[AggregatedResult],
+        results: List[Union[AggregatedResult, AggregatedSignatureResult]],
         filename: str = "summary.csv",
     ) -> Path:
         """Write a summary CSV of aggregated results to *output_dir*.
 
-        Returns the path of the written file.
+        KEM and signature results are saved to separate files so that
+        column layouts remain consistent within each file.
+
+        Returns the path of the KEM summary (or *filename* if no KEMs).
         """
-        if not results:
-            return self.output_dir / filename
+        kem_results = [r for r in results if isinstance(r, AggregatedResult)]
+        sig_results = [r for r in results if isinstance(r, AggregatedSignatureResult)]
 
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        csv_path = self.output_dir / filename
-        fieldnames = list(results[0].to_dict().keys())
-        with csv_path.open("w", newline="", encoding="utf-8") as fh:
-            writer = csv.DictWriter(fh, fieldnames=fieldnames)
-            writer.writeheader()
-            for result in results:
-                writer.writerow(result.to_dict())
-        return csv_path
+        kem_path = self.output_dir / filename
+
+        if kem_results:
+            fieldnames = list(kem_results[0].to_dict().keys())
+            with kem_path.open("w", newline="", encoding="utf-8") as fh:
+                writer = csv.DictWriter(fh, fieldnames=fieldnames)
+                writer.writeheader()
+                for result in kem_results:
+                    writer.writerow(result.to_dict())
+
+        if sig_results:
+            sig_path = self.output_dir / filename.replace(".csv", "_signatures.csv")
+            fieldnames = list(sig_results[0].to_dict().keys())
+            with sig_path.open("w", newline="", encoding="utf-8") as fh:
+                writer = csv.DictWriter(fh, fieldnames=fieldnames)
+                writer.writeheader()
+                for result in sig_results:
+                    writer.writerow(result.to_dict())
+
+        return kem_path
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -131,11 +142,19 @@ class ExperimentRunner:
 
     def _run_entry(
         self, entry: ExperimentEntry, parameter_set: str
-    ) -> AggregatedResult:
+    ) -> Union[AggregatedResult, AggregatedSignatureResult]:
         algo = _build_algorithm(entry.algorithm, parameter_set)
-        bench_runner = BenchmarkRunner(
-            algorithm=algo,
-            num_trials=entry.num_trials,
-            output_dir=self.output_dir,
-        )
+
+        if isinstance(algo, SignatureAlgorithm):
+            bench_runner = SignatureBenchmarkRunner(
+                algorithm=algo,
+                num_trials=entry.num_trials,
+                output_dir=self.output_dir,
+            )
+        else:
+            bench_runner = BenchmarkRunner(
+                algorithm=algo,
+                num_trials=entry.num_trials,
+                output_dir=self.output_dir,
+            )
         return bench_runner.run_and_save()

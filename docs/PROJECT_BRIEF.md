@@ -1,56 +1,53 @@
-# COMP0031 Project Brief: Hybrid Information Security towards the Age of Quantum Computation
+# COMP0031 Project Brief: Benchmarking FIPS-Standardized Post-Quantum Cryptography
 
 ## 1. Project Overview
-**Objective:** Build a reproducible, research-grade Python benchmarking framework to evaluate five Post-Quantum Cryptographic (PQC) Key Encapsulation Mechanisms (KEMs) based on the NIST Fourth Round evaluation criteria.
-**Target Algorithms:** BIKE, HQC, Classic McEliece, Streamlined NTRU Prime, NTRU LPRime.
-**Target Output:** A 9-page IEEE Transactions-style research paper analysing the speed, memory, and size trade-offs of these algorithms.
+[cite_start]**Objective:** Build a reproducible, research-grade Python benchmarking framework to evaluate the finalized National Institute of Standards and Technology (NIST) Post-Quantum Cryptography (PQC) standards: FIPS 203, FIPS 204, and FIPS 205[cite: 6342]. 
+[cite_start]**Target Output:** A 9-page IEEE Transactions-style research paper analyzing the performance, memory, and size trade-offs of these standardized algorithms for the COMP0031 Group Research Project[cite: 855, 894].
 
-## 2. Current Codebase State
-* **Architecture:** Modular, config-driven, and structurally sound. The `KEMAlgorithm` base interface is strictly enforced.
-* **Benchmarking Engine:** Fully functional. Measures wall-clock time (`time.perf_counter`) and peak heap allocation (`tracemalloc`) for Keygen, Encapsulation, and Decapsulation.
-* **Analysis & Plotting:** CSV aggregation and Matplotlib bar charts (timing, memory, sizes) are operational.
-* **CRITICAL GAP:** The algorithms (`src/algorithms/*.py`) are currently **placeholder stubs** returning `os.urandom` bytes. They do not execute real cryptographic mathematics.
+## 2. Target Algorithms (The FIPS Standards)
+The project focus has explicitly shifted away from the Round 4 candidates to the officially approved standards. The framework must implement and benchmark:
+
+* [cite_start]**FIPS 203 (ML-KEM):** The Module-Lattice-Based Key-Encapsulation Mechanism[cite: 1096]. 
+    * [cite_start]*Approved Parameter Sets:* ML-KEM-512, ML-KEM-768, and ML-KEM-1024[cite: 1122].
+* [cite_start]**FIPS 204 (ML-DSA):** The Module-Lattice-Based Digital Signature Algorithm[cite: 2596]. 
+    * [cite_start]*Approved Parameter Sets:* ML-DSA-44, ML-DSA-65, and ML-DSA-87[cite: 2909].
+* [cite_start]**FIPS 205 (SLH-DSA):** The Stateless Hash-Based Digital Signature Algorithm[cite: 4358].
+    * [cite_start]*Approved Parameter Sets:* SHA2 and SHAKE variants across varying security categories, including fast ('f') and small ('s') variants (e.g., SLH-DSA-SHA2-128s, SLH-DSA-SHAKE-256f)[cite: 5902].
+
+## 3. Current Codebase State & Necessary Architectural Changes
+* **Current State:** The repository is modular and config-driven, but currently houses placeholder stubs for old Round 4 candidates (BIKE, HQC, Classic McEliece, NTRU Prime) that return `os.urandom` bytes. Furthermore, the `base.py` interface is strictly designed for KEMs (`keygen`, `encapsulate`, `decapsulate`).
+* [cite_start]**Required Architectural Shift:** Because FIPS 204 and FIPS 205 are digital signature algorithms[cite: 2596, 4358], the base interface must be expanded or split. [cite_start]Digital signatures require signature generation using a private key and signature verification using a public key, which differs from KEM encapsulation/decapsulation[cite: 2638, 2639, 4399, 4400].
 
 ---
 
-## 3. Phased Execution Plan
+## 4. Phased Execution Plan
 
-### Phase 1: Cryptographic Integration (High Priority)
-The immediate next step is to replace the placeholder stubs with real cryptographic math.
-* **Step 1.1:** Identify and install Python bindings for the target PQC algorithms (e.g., `liboqs-python` via the Open Quantum Safe project, or CFFI wrappers).
-* **Step 1.2:** Update `requirements.txt` with the new cryptographic dependencies.
-* **Step 1.3:** Rewrite the `keygen()`, `encapsulate()`, and `decapsulate()` methods in `bike.py`, `hqc.py`, `mceliece.py`, `ntru_prime.py`, and `ntru_lprime.py` to call the real cryptographic libraries instead of `os.urandom`.
-* **Step 1.4:** Implement Known Answer Tests (KATs) in `tests/test_algorithms.py` to ensure the outputs exactly match NIST-provided test vectors.
+### Phase 1: Cryptographic Integration (Standardization Shift)
+* **Step 1.1:** Deprecate and remove the legacy Round 4 algorithms from `src/algorithms/` and the algorithm registry in `runner.py`.
+* **Step 1.2:** Update `base.py` to support two distinct abstract base classes: one for KEMs (FIPS 203) and one for Digital Signatures (FIPS 204, 205).
+* **Step 1.3:** Install reliable Python bindings (e.g., `liboqs-python`) that support the finalized FIPS standards, updating `requirements.txt`.
+* **Step 1.4:** Implement wrapper classes for ML-KEM, ML-DSA, and SLH-DSA, ensuring they return mathematically correct cryptographic operations rather than placeholder bytes. 
+* **Step 1.5:** Write Known Answer Tests (KATs) in `tests/test_algorithms.py` to ensure outputs match NIST-provided test vectors exactly.
 
 ### Phase 2: Rigorous Benchmarking & Data Collection
-Once the cryptography is real, transition to formal data collection.
-* **Step 2.1:** Modify the experiment configurations (`src/experiments/configs/default.json` and `default.yaml`). Increase the `num_trials` from `10` to a statistically significant number (e.g., 1,000 or 10,000) for the final run.
-* **Step 2.2:** Isolate the testing environment. Disable background processes and consider CPU affinity tools (e.g., `taskset` on Linux) to ensure deterministic timing measurements.
-* **Step 2.3:** Execute the main experiment runner: `python -m src.experiments.runner`.
-* **Step 2.4:** Verify that raw trial data and aggregated summaries are correctly populated in the `data/` directory.
+* **Step 2.1:** Overhaul the experiment configurations (`src/experiments/configs/default.json` and `default.yaml`) to map to the new FIPS parameter sets.
+* **Step 2.2:** Adjust `metrics.py` to track public key sizes, private key sizes, and ciphertext sizes for ML-KEM, as well as signature sizes for ML-DSA and SLH-DSA.
+* **Step 2.3:** Execute `python -m src.experiments.runner` using a statistically significant number of trials (e.g., `num_trials: 1000`).
+* **Step 2.4:** Collect wall-clock time (`time.perf_counter`) and peak memory usage (`tracemalloc`) data, saving to CSV in the `data/` directory.
 
 ### Phase 3: Statistical Analysis & Visualization
-Process the raw data for inclusion in the final research paper.
-* **Step 3.1:** Extend `src/analysis/stats.py` to calculate advanced statistics, such as confidence intervals and p-values, to compare algorithm performance rigorously.
-* **Step 3.2:** Run the plotting utilities (`plot_timing_comparison`, `plot_key_sizes`, `plot_memory_usage`) to generate figures in the `results/` folder.
-* **Step 3.3:** Refine Matplotlib styling (labels, fonts, error bars from standard deviations) to meet IEEE academic publishing standards.
+* **Step 3.1:** Run `src/analysis/stats.py` to aggregate the CSV trial data into mean, standard deviation, min, and max metrics.
+* **Step 3.2:** Generate Matplotlib charts using `src/analysis/plots.py` to visually compare timing, key sizes, and memory usage between the three FIPS standards.
 
 ### Phase 4: Constructing the Research Paper
-Use the generated data and plots to write the COMP0031 Group Report.
-* **Step 4.1:** Format the document to the IEEE Transactions style with a strict 9-page limit (excluding references).
-* **Step 4.2:** Draft the sections according to the COMP0031 syllabus structure:
-  * **Abstract & Introduction:** Define the PQC landscape and the NIST context.
-  * **Related Work:** Discuss NIST IR 8413/8545 and other benchmarking studies.
-  * **Research Hypothesis & Experiment Design:** Detail the benchmarking framework, metrics tracked (speed, size, memory), and environmental controls.
-  * **Analysis of Results:** Embed the generated charts from Phase 3 and present the statistical findings.
-  * **Discussion & Limitations:** Address anomalies (e.g., McEliece's massive key generation time) and limitations of the testing environment.
-  * **Conclusion & Future Work:** Final verdict on the algorithms based on the data.
-* **Step 4.3:** Complete the Individual Peer Assessment of Contribution (IPAC) on Moodle.
-
----
-
-## 4. Repository & Development Rules
-To maintain the integrity of the research framework:
-1. **Virtual Environment Isolation:** All package installations must be done within the active `.venv` using `python -m pip install`.
-2. **Clean Git History:** Use the **Squash and Merge** strategy on GitHub to keep the main branch history linear, clean, and professional.
-3. **Never Commit Data/Artifacts:** Ensure `.venv/`, `__pycache__/`, raw `data/*.csv`, and generated `results/*.png` remain ignored via `.gitignore`.
+* [cite_start]**Step 4.1:** Format the report to a strict maximum of 9 pages (excluding references) using the IEEE Transactions style[cite: 894].
+* **Step 4.2:** Draft the report following the required structure:
+    * **1. [cite_start]Introduction:** Discuss the threat of quantum computing to RSA/ECC and the 2024 NIST FIPS standardizations[cite: 6121, 6342].
+    * **2. Related Work:** Review other benchmarking literature.
+    * **3. [cite_start]Research Hypothesis:** Define the specific questions regarding the performance trade-offs between lattice-based (FIPS 203/204) and hash-based (FIPS 205) cryptography[cite: 863, 6138].
+    * **4. [cite_start]Experiment Design:** Detail the methodology, dataset collection, metrics, and benchmarks [cite: 882-886].
+    * **5. [cite_start]Analysis of Results:** Embed the generated charts and discuss the statistical data[cite: 887].
+    * **6. [cite_start]Discussion and Limitations:** Interpret the findings and state any constraints of the experimental setup[cite: 888].
+    * **7. [cite_start]Conclusion and Future Work:** Summarize the operational implications for migrating to PQC[cite: 889, 6250].
+* **Step 4.3:** Ensure all text is original; use of generative AI tools must adhere to UCL policy[cite: 1050, 1053]. 
+* [cite_start]**Step 4.4:** Complete the Individual Peer Assessment of Contribution (IPAC) via Moodle before the deadline (Monday 30 March 2026 at 16:00 UK time)[cite: 873, 1065].
