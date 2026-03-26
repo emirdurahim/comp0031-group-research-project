@@ -39,6 +39,10 @@ src/
     analysis/            # Plotting and statistical helpers
         plots.py
         stats.py
+    qkd_simulation/
+        bb84.py          # Simulation of QKD(BB84) using QISKIT
+    hybrid/
+        hybrid.py        # Hybrid simulation with PQC(FIPS-203) and QKD(BB84)
 tests/                   # pytest test suite
 data/                    # Benchmark CSV output (git-ignored)
 results/                 # Generated figures (git-ignored)
