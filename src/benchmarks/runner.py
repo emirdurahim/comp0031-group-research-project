@@ -16,6 +16,7 @@ import time
 import tracemalloc
 from pathlib import Path
 from typing import List, Optional
+from tqdm import tqdm
 
 from src.algorithms.base import KEMAlgorithm, SignatureAlgorithm
 
@@ -69,7 +70,8 @@ class BenchmarkRunner:
         wall-clock time and peak heap allocation for each step.
         """
         results: List[BenchmarkResult] = []
-        for trial in range(self.num_trials):
+
+        for trial in tqdm(range(self.num_trials)):
             result = self._run_trial(trial)
             results.append(result)
         return results
@@ -191,7 +193,7 @@ class SignatureBenchmarkRunner:
         wall-clock time and peak heap allocation for each step.
         """
         results: List[SignatureBenchmarkResult] = []
-        for trial in range(self.num_trials):
+        for trial in tqdm(range(self.num_trials)):
             result = self._run_trial(trial)
             results.append(result)
         return results
