@@ -216,7 +216,6 @@ def aggregate_results(results: List[BenchmarkResult]) -> AggregatedResult:
 @dataclass
 class SignatureBenchmarkResult:
     """Measurements from a single digital-signature benchmark trial.
-
     Attributes
     ----------
     algorithm:
