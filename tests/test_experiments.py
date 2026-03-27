@@ -21,8 +21,8 @@ class TestLoadConfig:
         cfg = {
             "experiments": [
                 {
-                    "algorithm": "BIKE",
-                    "parameter_sets": ["Level-1"],
+                    "algorithm": "FIPS-204",
+                    "parameter_sets": ["ML-DSA-44"],
                     "num_trials": 3,
                 }
             ],
@@ -34,16 +34,16 @@ class TestLoadConfig:
         config = load_config(p)
         assert isinstance(config, ExperimentConfig)
         assert len(config.experiments) == 1
-        assert config.experiments[0].algorithm == "BIKE"
+        assert config.experiments[0].algorithm == "FIPS-204"
         assert config.experiments[0].num_trials == 3
 
     def test_load_yaml(self, tmp_path):
         pytest.importorskip("yaml")
         content = (
             "experiments:\n"
-            "  - algorithm: HQC\n"
+            "  - algorithm: FIPS-203\n"
             "    parameter_sets:\n"
-            "      - HQC-128\n"
+            "      - ML-KEM-512\n"
             "    num_trials: 5\n"
             "output_dir: data\n"
         )
@@ -51,7 +51,7 @@ class TestLoadConfig:
         p.write_text(content)
 
         config = load_config(p)
-        assert config.experiments[0].algorithm == "HQC"
+        assert config.experiments[0].algorithm == "FIPS-203"
         assert config.experiments[0].num_trials == 5
 
     def test_file_not_found(self, tmp_path):
@@ -65,7 +65,7 @@ class TestLoadConfig:
             load_config(p)
 
     def test_default_num_trials(self, tmp_path):
-        cfg = {"experiments": [{"algorithm": "BIKE", "parameter_sets": ["Level-1"]}]}
+        cfg = {"experiments": [{"algorithm": "FIPS-204", "parameter_sets": ["ML-DSA-44"]}]}
         p = tmp_path / "cfg.json"
         p.write_text(json.dumps(cfg))
         config = load_config(p)
@@ -86,12 +86,12 @@ class TestLoadConfig:
 
 class TestExperimentEntry:
     def test_defaults(self):
-        entry = ExperimentEntry(algorithm="BIKE", parameter_sets=["Level-1"])
+        entry = ExperimentEntry(algorithm="FIPS-204", parameter_sets=["ML-DSA-44"])
         assert entry.num_trials == 10
 
     def test_custom_trials(self):
         entry = ExperimentEntry(
-            algorithm="HQC", parameter_sets=["HQC-128"], num_trials=25
+            algorithm="FIPS-203", parameter_sets=["ML-KEM-512"], num_trials=25
         )
         assert entry.num_trials == 25
 
@@ -106,8 +106,8 @@ class TestExperimentRunner:
         return ExperimentConfig(
             experiments=[
                 ExperimentEntry(
-                    algorithm="BIKE",
-                    parameter_sets=["Level-1"],
+                    algorithm="FIPS-204",
+                    parameter_sets=["ML-DSA-44"],
                     num_trials=2,
                 )
             ],
@@ -123,8 +123,8 @@ class TestExperimentRunner:
         config = ExperimentConfig(
             experiments=[
                 ExperimentEntry(
-                    algorithm="HQC",
-                    parameter_sets=["HQC-128", "HQC-192"],
+                    algorithm="FIPS-203",
+                    parameter_sets=["ML-KEM-512", "ML-KEM-768"],
                     num_trials=2,
                 )
             ],
@@ -137,9 +137,11 @@ class TestExperimentRunner:
     def test_save_summary_writes_csv(self, tmp_path):
         runner = ExperimentRunner(self._small_config(), output_dir=tmp_path)
         results = runner.run()
-        csv_path = runner.save_summary(results)
-        assert csv_path.exists()
-        text = csv_path.read_text()
+        runner.save_summary(results)
+        # FIPS-204 is a signature algorithm, so results go to _signatures.csv
+        sig_csv = tmp_path / "summary_signatures.csv"
+        assert sig_csv.exists()
+        text = sig_csv.read_text()
         assert "algorithm" in text
 
     def test_save_summary_empty_returns_path(self, tmp_path):
@@ -165,7 +167,7 @@ class TestExperimentRunner:
     def test_load_from_json_file(self, tmp_path):
         cfg = {
             "experiments": [
-                {"algorithm": "BIKE", "parameter_sets": ["Level-1"], "num_trials": 1}
+                {"algorithm": "FIPS-204", "parameter_sets": ["ML-DSA-44"], "num_trials": 1}
             ],
             "output_dir": "data",
         }
@@ -185,4 +187,4 @@ class TestExperimentRunner:
             / "default.json"
         )
         config = load_config(default_cfg)
-        assert len(config.experiments) == 6
+        assert len(config.experiments) == 3
