@@ -1,0 +1,17 @@
+{
+  "experiments": [
+    {
+      "algorithm": "FIPS-205",
+      "parameter_sets": [
+        "SLH-DSA-SHAKE-128s",
+        "SLH-DSA-SHAKE-128f",
+        "SLH-DSA-SHAKE-192s",
+        "SLH-DSA-SHAKE-192f",
+        "SLH-DSA-SHAKE-256s",
+        "SLH-DSA-SHAKE-256f"
+      ],
+      "num_trials": 5
+    }
+  ],
+  "output_dir": "data"
+}

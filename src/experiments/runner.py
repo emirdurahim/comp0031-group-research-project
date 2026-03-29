@@ -159,3 +159,10 @@ class ExperimentRunner:
                 output_dir=self.output_dir,
             )
         return bench_runner.run_and_save()
+
+if __name__ == "__main__":
+    import sys
+    config_path = sys.argv[1] if len(sys.argv) > 1 else "src/experiments/configs/default.json"
+    runner = ExperimentRunner(config_path)
+    summary = runner.run()
+    runner.save_summary(summary, "summary.csv")
